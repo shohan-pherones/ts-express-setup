@@ -1,11 +1,24 @@
 import { Request, Response } from 'express';
 import { StudentServices } from './student.service';
+import studentValidationSchema from './student.validation';
 
 const createStudent = async (req: Request, res: Response) => {
   try {
     const { student } = req.body;
 
-    const result = await StudentServices.createStudentIntoDb(student);
+    // const { error, value } = studentSchema.validate(student);
+
+    // if (error) {
+    //   res.status(500).json({
+    //     success: false,
+    //     message: 'Something went wrong',
+    //     error: error.details,
+    //   });
+    // }
+
+    const parsedData = studentValidationSchema.parse(student);
+
+    const result = await StudentServices.createStudentIntoDb(parsedData);
 
     res.status(201).json({
       success: true,
@@ -13,7 +26,11 @@ const createStudent = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong',
+      error,
+    });
   }
 };
 
