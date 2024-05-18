@@ -1,28 +1,31 @@
-export interface Guardian {
+import { Model } from 'mongoose';
+
+export type TGuardian = {
   fatherName: string;
   fatherOccupation: string;
   fatherContactNo: string;
   motherName: string;
   motherOccupation: string;
   motherContactNo: string;
-}
+};
 
-export interface UserName {
+export type TUserName = {
   firstName: string;
   middleName?: string;
   lastName: string;
-}
+};
 
-export interface LocalGuardian {
+export type TLocalGuardian = {
   name: string;
   occupation: string;
   contactNo: string;
   address: string;
-}
+};
 
-export interface Student {
+export type TStudent = {
   id: string;
-  name: UserName;
+  password: string;
+  name: TUserName;
   gender: 'male' | 'female' | 'other';
   dateOfBirth?: string;
   email: string;
@@ -31,8 +34,23 @@ export interface Student {
   bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
   presentAddress: string;
   permanentAddress: string;
-  guardian: Guardian;
-  localGuardian: LocalGuardian;
+  guardian: TGuardian;
+  localGuardian: TLocalGuardian;
   profileImg?: string;
   isActive: 'active' | 'inactive';
+  isDeleted: boolean;
+};
+
+export interface TStudentModel extends Model<TStudent> {
+  isStudentExist: (id: string) => Promise<TStudent | null>;
 }
+
+// export type TStudentMethods = {
+//   isStudentExist: (id: string) => Promise<TStudent | null>;
+// };
+
+// export type TStudentModel = Model<
+//   TStudent,
+//   Record<string, never>,
+//   TStudentMethods
+// >;

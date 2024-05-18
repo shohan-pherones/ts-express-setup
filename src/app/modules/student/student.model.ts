@@ -1,13 +1,16 @@
 import { Schema, model } from 'mongoose';
-import {
-  Guardian,
-  LocalGuardian,
-  Student,
-  UserName,
-} from './student.interface';
 import validator from 'validator';
+import {
+  TGuardian,
+  TLocalGuardian,
+  TStudent,
+  TStudentModel,
+  TUserName,
+} from './student.interface';
+import bcrypt from 'bcrypt';
+import config from '../../config';
 
-const userNameSchema = new Schema<UserName>({
+const userNameSchema = new Schema<TUserName>({
   firstName: {
     type: String,
     required: [true, 'First name is required'],
@@ -35,7 +38,7 @@ const userNameSchema = new Schema<UserName>({
   },
 });
 
-const guardianSchema = new Schema<Guardian>({
+const guardianSchema = new Schema<TGuardian>({
   fatherName: { type: String, required: [true, "Father's name is required"] },
   fatherOccupation: {
     type: String,
@@ -56,7 +59,7 @@ const guardianSchema = new Schema<Guardian>({
   },
 });
 
-const localGuardianSchema = new Schema<LocalGuardian>({
+const localGuardianSchema = new Schema<TLocalGuardian>({
   name: { type: String, required: [true, "Local guardian's name is required"] },
   occupation: {
     type: String,
@@ -72,11 +75,16 @@ const localGuardianSchema = new Schema<LocalGuardian>({
   },
 });
 
-const studentSchema = new Schema<Student>({
+const studentSchema = new Schema<TStudent, TStudentModel>({
   id: {
     type: String,
     required: [true, 'Student ID is required'],
     unique: true,
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    maxlength: [20, 'Password can not be more tthan 20 characters'],
   },
   name: {
     type: userNameSchema,
@@ -135,8 +143,41 @@ const studentSchema = new Schema<Student>({
     enum: ['active', 'inactive'],
     default: 'active',
   },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const StudentModel = model<Student>('Student', studentSchema);
+studentSchema.pre('save', async function (next) {
+  this.password = await bcrypt.hash(
+    this.password,
+    Number(config.bcrypt_salt_rounds),
+  );
+
+  next();
+});
+
+studentSchema.post('save', function (doc, next) {
+  doc.password = '';
+
+  next();
+});
+
+studentSchema.pre('find', function (next) {
+  console.log(this);
+});
+
+// studentSchema.methods.isStudentExist = async function (id: string) {
+//   const existingStudent = await StudentModel.findOne({ id });
+//   return existingStudent;
+// };
+
+studentSchema.statics.isStudentExist = async function (id: string) {
+  const existingStudent = await StudentModel.findOne({ id });
+  return existingStudent;
+};
+
+const StudentModel = model<TStudent, TStudentModel>('Student', studentSchema);
 
 export default StudentModel;

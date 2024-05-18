@@ -61,6 +61,9 @@ const studentSchema = Joi.object({
   id: Joi.string().required().messages({
     'string.empty': 'Student ID is required',
   }),
+  password: Joi.string().max(20).required().messages({
+    'string.empty': 'Password is required',
+  }),
   name: userNameSchema.required().messages({
     'object.base': 'Student name is required',
   }),
@@ -105,6 +108,7 @@ const studentSchema = Joi.object({
     .messages({
       'any.only': '{#value} is not a valid status',
     }),
+  isDeleted: Joi.boolean().default(false),
 });
 
 export default studentSchema;
